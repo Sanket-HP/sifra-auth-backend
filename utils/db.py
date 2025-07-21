@@ -1,4 +1,4 @@
-from azure.data.tables import TableServiceClient, TableEntity
+from azure.data.tables import TableServiceClient
 import os
 import uuid
 
@@ -6,8 +6,15 @@ conn_str = os.environ["AZURE_STORAGE_CONNECTION_STRING"]
 table_client = TableServiceClient.from_connection_string(conn_str).get_table_client("Users")
 
 def user_exists(email):
-    entities = table_client.query_entities(f"PartitionKey eq 'User' and email eq '{email}'")
-    return any(entities)
+    try:
+        filter_query = f"PartitionKey eq 'User' and email eq '{email}'"
+        entities = table_client.query_entities(filter=filter_query)
+        for entity in entities:
+            return True
+        return False
+    except Exception as e:
+        print("Error checking user existence:", e)
+        return False
 
 def create_user(full_name, email, role, hashed_pw):
     entity = {
