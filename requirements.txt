@@ -1,0 +1,6 @@
+azure-functions
+pymongo
+bcrypt
+python-jose
+sendgrid
+python-dotenv
