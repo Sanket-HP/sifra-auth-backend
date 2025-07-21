@@ -1,5 +1,6 @@
 from azure.data.tables import TableServiceClient, TableEntity
 import os
+import uuid
 
 conn_str = os.environ["AZURE_STORAGE_CONNECTION_STRING"]
 table_client = TableServiceClient.from_connection_string(conn_str).get_table_client("Users")
