@@ -5,14 +5,22 @@ import uuid
 
 try:
     conn_str = os.environ["AZURE_STORAGE_CONNECTION_STRING"]
-    table_client = TableServiceClient.from_connection_string(conn_str).get_table_client("Users")
-    logging.info("Connected to Azure Table Storage")
+    service = TableServiceClient.from_connection_string(conn_str)
+    table_client = service.get_table_client("Users")
+
+    # Create the table if it doesn't exist
+    try:
+        table_client.create_table()
+        logging.info("Table 'Users' created.")
+    except:
+        logging.info("Table 'Users' already exists.")
 except Exception as e:
-    logging.error(f"Failed to connect to Table Storage: {str(e)}")
+    logging.error(f"Table connection error: {str(e)}")
 
 def user_exists(email):
     try:
-        entities = table_client.query_entities(f"PartitionKey eq 'User' and email eq '{email}'")
+        filter_query = f"PartitionKey eq 'User' and email eq '{email}'"
+        entities = table_client.query_entities(filter_query)
         return any(entities)
     except Exception as e:
         logging.error(f"user_exists error: {str(e)}")
