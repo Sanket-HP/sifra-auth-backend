@@ -1,7 +1,7 @@
 import logging
 import azure.functions as func
 import json
-from utils import db  # Make sure 'utils' is inside the SignupFunction folder
+from utils import db  # Adjust if path differs
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Signup function triggered")

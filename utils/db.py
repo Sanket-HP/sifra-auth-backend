@@ -3,24 +3,21 @@ from azure.data.tables import TableServiceClient
 import os
 import uuid
 
-try:
-    conn_str = os.environ["AZURE_STORAGE_CONNECTION_STRING"]
-    service = TableServiceClient.from_connection_string(conn_str)
-    table_client = service.get_table_client("Users")
-
-    # Create the table if it doesn't exist
+def get_table_client():
     try:
-        table_client.create_table()
-        logging.info("Table 'Users' created.")
-    except:
-        logging.info("Table 'Users' already exists.")
-except Exception as e:
-    logging.error(f"Table connection error: {str(e)}")
+        conn_str = os.environ["AZURE_STORAGE_CONNECTION_STRING"]
+        service_client = TableServiceClient.from_connection_string(conn_str)
+        table_client = service_client.get_table_client("Users")
+        logging.info("Connected to Azure Table Storage")
+        return table_client
+    except Exception as e:
+        logging.error(f"Failed to connect to Table Storage: {str(e)}")
+        raise
 
 def user_exists(email):
     try:
-        filter_query = f"PartitionKey eq 'User' and email eq '{email}'"
-        entities = table_client.query_entities(filter_query)
+        table_client = get_table_client()
+        entities = table_client.query_entities(f"PartitionKey eq 'User' and email eq '{email}'")
         return any(entities)
     except Exception as e:
         logging.error(f"user_exists error: {str(e)}")
@@ -28,6 +25,7 @@ def user_exists(email):
 
 def create_user(full_name, email, role, hashed_pw):
     try:
+        table_client = get_table_client()
         entity = {
             "PartitionKey": "User",
             "RowKey": str(uuid.uuid4()),
