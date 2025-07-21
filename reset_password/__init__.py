@@ -1,18 +1,22 @@
-import azure.functions as func
-import json
-import bcrypt
-from utils.db import users_collection
+import os
+import smtplib
+from email.mime.text import MIMEText
 
-def main(req: func.HttpRequest) -> func.HttpResponse:
+def send_verification_email(to_email, subject, html_content):
+    gmail_user = os.environ.get("GMAIL_USER")
+    gmail_pass = os.environ.get("GMAIL_APP_PASSWORD")
+
+    msg = MIMEText(html_content, 'html')
+    msg['Subject'] = subject
+    msg['From'] = gmail_user
+    msg['To'] = to_email
+
     try:
-        data = req.get_json()
-        email = data.get("email")
-        new_password = data.get("new_password")
-
-        hashed_pw = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt())
-        users_collection.update_one({"email": email}, {"$set": {"password": hashed_pw}})
-
-        return func.HttpResponse("Password reset successfully", status_code=200)
-
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(gmail_user, gmail_pass)
+            server.send_message(msg)
+        print(f"✅ Email sent to {to_email}")
+        return True
     except Exception as e:
-        return func.HttpResponse(str(e), status_code=500)
+        print(f"❌ Failed to send email: {e}")
+        return False
