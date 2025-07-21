@@ -7,7 +7,7 @@
       "direction": "in",
       "name": "req",
       "methods": ["post"],
-      "route": "auth/forgot"
+      "route": "forgot"
     },
     {
       "type": "http",
